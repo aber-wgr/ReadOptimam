@@ -7,6 +7,7 @@ from scipy.ndimage import gaussian_filter
 import os
 
 def diread(path):
+    
     Beginning_image = dicom.dcmread(path)
     beginning_image = Beginning_image.pixel_array
     
