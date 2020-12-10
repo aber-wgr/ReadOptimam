@@ -3,12 +3,11 @@ import os
 import pydicom as dicom
 import matplotlib.pyplot as plt
 import numpy as np
-import cv2
 import utils as UTILS
 import json 
 import pickle
 
-ROOTDIR = r"..\data"
+ROOTDIR = r"\\groupspaces.dcs.aber.ac.uk\groupspaces\mammography\OPTIMAM_ORIGINAL_new\OPTIMAM_DB\image_db\sharing\omi-db\data"
 
 listdir = os.listdir(ROOTDIR)
 

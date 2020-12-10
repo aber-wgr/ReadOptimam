@@ -7,7 +7,6 @@ import numpy as np
 import cv2
 import utils as UTILS
 from pathlib import Path
-import png
 
 ROOTDIR = r"\\groupspaces.dcs.aber.ac.uk\groupspaces\mammography\OPTIMAM_ORIGINAL_new\OPTIMAM_DB\image_db\sharing\omi-db\images"
 SAVEPATH = r"..\png_images\lesions"
@@ -28,22 +27,12 @@ for row in range(0, count_row):
     IMAGE_PATH = os.path.join(LESION_FOLDER, str(new_data['LESION_FILE'].iloc[row]) + ".dcm")
     try:
         image = UTILS.diread(IMAGE_PATH)
-        x = int(4096 / scale_factor)
-        y = int(3328 / scale_factor)
-        scaled_image = resize(image, ( x, x), anti_aliasing=True) # comes out as 0-1 float64
-        scaled_image_z = (65535*((scaled_image - scaled_image.min())/scaled_image.ptp())).astype(np.uint16)
-        #scaled_image_z = scaled_image.astype(np.uint16) #convert back to 16-bit grayscale
-        image_output, mask_output, seg_output, maskseg_output, array_output, bound_output = UTILS.output_location(SAVEPATH, new_data['BENIGNCLASSIFICATION'].iloc[row], new_data['MARKID'].iloc[row], new_data['MASSCLASSIFICATION'].iloc[row], 1)
-        image_output =  os.path.join(SAVEPATH, str(new_data['MARKID'].iloc[row]) + ".png")
-        Path(image_output).parents[0].mkdir(parents=True, exist_ok=True)
-
-        print("Image " + str(row) + ", original type:" + str(image.dtype))
-
-        f = open(image_output, 'wb')
-        writer = png.Writer(width=x, height=x, bitdepth=16, greyscale=True)
-        writer.write(f, scaled_image_z)
+        #scaled_image = resize(image, ( 4096 / scale_factor, 3328 / scale_factor), anti_aliasing=False)
+        #image_output, mask_output, seg_output, maskseg_output, array_output, bound_output = UTILS.output_location(SAVEPATH, new_data['BENIGNCLASSIFICATION'].iloc[row], new_data['MARKID'].iloc[row], new_data['MASSCLASSIFICATION'].iloc[row], 1)
+        #image_output =  os.path.join(SAVEPATH, str(new_data['MARKID'].iloc[row]) + ".png")
+        #Path(image_output).parents[0].mkdir(parents=True, exist_ok=True)
         #plt.imsave(image_output, scaled_image, cmap = 'gray')
-        #print("Image " + str(row) + ", original type:" + str(image.dtype))
+        print("Image " + str(row) + ", original type:" + str(image.dtype))
     except IOError:
         print("Missing Image")
     
