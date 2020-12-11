@@ -13,7 +13,7 @@ ROOTDIR = r"..\data"
 listdir = os.listdir(ROOTDIR)
 
 Episodes = {}
-ImageList = {"folder":[], "studyID":[], "seriesID":[], "imageID":[], "laterality":[], "pixel_style":[],"opinion_screen":[],"opinion_mammog":[],"opinion_ultra":[]}
+ImageList = {"folder":[], "studyID":[], "seriesID":[], "imageID":[], "laterality":[], "pixel_style":[], "procedure":[], "opinion_screen":[], "opinion_mammog":[], "opinion_ultra":[]}
 
 #modified version of the script to build the extraction CSV.
 #In this we are interested in retrieving the casewise data and connecting that to the images
@@ -138,6 +138,12 @@ for folder in listdir:
                                                 #Look up the pixel style. MONOCHROME2 is black-minimum (standard black image), MONOCHROME1 is white-minimum
                                                 pixel_style_section = image_tags["00280004"]
                                                 pixel_style = pixel_style_section["Value"][0]
+                                                procedure_section = image_tags.get("00400254")
+                                                procedure = None
+                                                if(procedure_section != None):
+                                                    procedure_value = procedure_section.get("Value")
+                                                    if(procedure_value!= None):
+                                                        procedure = procedure_value[0]
                                                 if(pixel_style=="MONOCHROME2"):
                                                     if(laterality=="L" or laterality=="R"):
                                                         ImageList["studyID"].append(study)
@@ -146,6 +152,7 @@ for folder in listdir:
                                                         ImageList["folder"].append(folder)
                                                         ImageList["laterality"].append(laterality)
                                                         ImageList["pixel_style"].append(pixel_style)
+                                                        ImageList["procedure"].append(procedure)
                                                         ImageList["opinion_screen"].append(episode["Opinions"][laterality].get("ScreenOpinion"))
                                                         ImageList["opinion_mammog"].append(episode["Opinions"][laterality].get("MammoOpinion"))
                                                         ImageList["opinion_ultra"].append(episode["Opinions"][laterality].get("UssOpinion"))
