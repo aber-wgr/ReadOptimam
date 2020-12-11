@@ -14,13 +14,15 @@ SAVEPATH = r"..\png_images\onecase"
 input_file = r"..\onecase.xlsx"
 data = pd.read_excel(input_file)
 #new_data = data[['FOLDER','LESION_FOLDER', 'LESION_FILE','BENIGNCLASSIFICATION', 'MASSCLASSIFICATION','WIDTH','SUSPICIOUSCALCIFICATIONS','PLASMACELLMASTITIS','X1','X2','WITHCALCIFICATION','MARKID','SUTURECALCIFICATION','OTHERBENIGNCLUSTER','FOCALASYMMETRY','MILKOFCALCIUM','DYSTROPHIC','LESIONID','CONSPICUITY','FATNECROSIS','HEIGHT','Y1','Y2','VASCULAR','MASS','SKIN','ARCHITECTUREDISTORTION']]
-new_data = data[['folder','studyID','seriesID','imageID','laterality','pixel_style']]
-scale_factor = 2
+new_data = data[['folder','studyID','seriesID','imageID','laterality','pixel_style','opinion_screen','opinion_mammog','opinion_ultra']]
+scale_factor = 4
 
 folder = []
 
 count_row = new_data.shape[0]  # gives number of row count
 count_col = new_data.shape[1]
+
+count_row = 25
 
 for row in range(0, count_row):
     print(row)

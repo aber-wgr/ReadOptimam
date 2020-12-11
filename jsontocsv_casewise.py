@@ -13,7 +13,7 @@ ROOTDIR = r"..\data"
 listdir = os.listdir(ROOTDIR)
 
 Episodes = {}
-
+ImageList = {"folder":[], "studyID":[], "seriesID":[], "imageID":[], "laterality":[], "pixel_style":[],"opinion_screen":[],"opinion_mammog":[],"opinion_ultra":[]}
 
 #modified version of the script to build the extraction CSV.
 #In this we are interested in retrieving the casewise data and connecting that to the images
@@ -50,7 +50,7 @@ for folder in listdir:
             if(studyList!=None):
                 # this is an interesting element. (Not all Studies attached to an Episode will have Marks)
                 newEpisode["StudyList"] = studyList
-                newEpisode["Opinions"] = { "Left":{}, "Right":{} }
+                newEpisode["Opinions"] = { "L":{}, "R":{} }
                 #Extract the various potential Opinions
                 #Note these will not always be present
                 assessment = episodeData.get("ASSESSMENT")
@@ -62,14 +62,14 @@ for folder in listdir:
                     # there can also be more than one assessment per breast too, although this virtually never happens
                     if(left_assess!=None):
                         for instance in left_assess:
-                            newEpisode["Opinions"]["Left"]["MammoOpinion"] = left_assess[instance]["MammoOpinion"]
-                            newEpisode["Opinions"]["Left"]["UssOpinion"] = left_assess[instance]["UssOpinion"]
+                            newEpisode["Opinions"]["L"]["MammoOpinion"] = left_assess[instance]["MammoOpinion"]
+                            newEpisode["Opinions"]["L"]["UssOpinion"] = left_assess[instance]["UssOpinion"]
                             break
                     if(right_assess!=None):
                         for instance in right_assess:
                             print(instance)
-                            newEpisode["Opinions"]["Right"]["MammoOpinion"] = right_assess[instance]["MammoOpinion"]
-                            newEpisode["Opinions"]["Right"]["UssOpinion"] = right_assess[instance]["UssOpinion"]
+                            newEpisode["Opinions"]["R"]["MammoOpinion"] = right_assess[instance]["MammoOpinion"]
+                            newEpisode["Opinions"]["R"]["UssOpinion"] = right_assess[instance]["UssOpinion"]
                             break
 
                 screening = episodeData.get("SCREENING")
@@ -78,11 +78,9 @@ for folder in listdir:
                     left_screen = screening.get("L")
                     right_screen = screening.get("R")
                     if(left_screen!=None):
-                        newEpisode["Opinions"]["Left"]["ScreenOpinion"] = left_screen["Opinion"]
-                        break
+                        newEpisode["Opinions"]["L"]["ScreenOpinion"] = left_screen["Opinion"]
                     if(right_screen!=None):
-                        newEpisode["Opinions"]["Right"]["ScreenOpinion"] = instance["Opinion"]
-                        break
+                        newEpisode["Opinions"]["R"]["ScreenOpinion"] = right_screen["Opinion"]
             
                 newEpisode["studyID"] = []
                 newEpisode["seriesID"] = []
@@ -109,8 +107,52 @@ for folder in listdir:
                                     episode["studyID"].append(study)
                                     episode["seriesID"].append(series)
                                     episode["imageID"].append(sop)
+
+                                    image_tags_file = os.path.join(new_dir, study, sop + ".json")
+                                    image_tags_jsonfile = None
+                                    try:
+                                        image_tags_jsonfile = open(image_tags_file)
+                                    except:
+                                        image_tags_file = os.path.join(new_dir, study, sop + ".dcm.json")
+                                        try:
+                                            image_tags_jsonfile = open(image_tags_file)
+                                        except:
+                                            # if we can't load the thing, it's one of the weird unconnected entries
+                                            break
+                                        finally:
+                                            dd = ""
+                                    if(image_tags_jsonfile!=None):
+                                        print("Loading image tags from:" + image_tags_file)
+                                        image_tags = None
+                                        try:
+                                            image_tags = json.load(image_tags_jsonfile)
+                                        except:
+                                            image_tags_jsonfile.close()
+                                            break
+                                        #laterality value is at 0020,0062 and can be any one of "L", "R", "U" (Unpaired, shouldn't be in this set) or "B" (Both)
+                                        laterality_section = image_tags.get("00200062")
+                                        if(laterality_section!=None):
+                                            laterality_value = laterality_section.get("Value")
+                                            if(laterality_value!=None):
+                                                laterality = laterality_value[0]
+                                                #Look up the pixel style. MONOCHROME2 is black-minimum (standard black image), MONOCHROME1 is white-minimum
+                                                pixel_style_section = image_tags["00280004"]
+                                                pixel_style = pixel_style_section["Value"][0]
+                                                if(pixel_style=="MONOCHROME2"):
+                                                    if(laterality=="L" or laterality=="R"):
+                                                        ImageList["studyID"].append(study)
+                                                        ImageList["seriesID"].append(series)
+                                                        ImageList["imageID"].append(sop)
+                                                        ImageList["folder"].append(folder)
+                                                        ImageList["laterality"].append(laterality)
+                                                        ImageList["pixel_style"].append(pixel_style)
+                                                        ImageList["opinion_screen"].append(episode["Opinions"][laterality].get("ScreenOpinion"))
+                                                        ImageList["opinion_mammog"].append(episode["Opinions"][laterality].get("MammoOpinion"))
+                                                        ImageList["opinion_ultra"].append(episode["Opinions"][laterality].get("UssOpinion"))
+                                        image_tags_jsonfile.close()
+
                             
 #df = pd.DataFrame(list(zip(FOLDER,LESION_FOLDER,LESION_FILE,BENIGNCLASSIFICATION, MASSCLASSIFICATION,WIDTH,SUSPICIOUSCALCIFICATIONS,PLASMACELLMASTITIS,XONE,XTWO,WITHCALCIFICATION,MARKID,SUTURECALCIFICATION,OTHERBENIGNCLUSTER,FOCALASYMMETRY,MILKOFCALCIUM,DYSTROPHIC,LESIONID,CONSPICUITY,FATNECROSIS,HEIGHT,YONE,YTWO,VASCULAR,MASS,SKIN,ARCHITECTUREDISTORTION)), columns = ['FOLDER','LESION_FOLDER', 'LESION_FILE','BENIGNCLASSIFICATION', 'MASSCLASSIFICATION','WIDTH','SUSPICIOUSCALCIFICATIONS','PLASMACELLMASTITIS','X1','X2','WITHCALCIFICATION','MARKID','SUTURECALCIFICATION','OTHERBENIGNCLUSTER','FOCALASYMMETRY','MILKOFCALCIUM','DYSTROPHIC','LESIONID','CONSPICUITY','FATNECROSIS','HEIGHT','Y1','Y2','VASCULAR','MASS','SKIN','ARCHITECTUREDISTORTION'])
-df = pd.DataFrame(Episodes)
+df = pd.DataFrame(ImageList)
 output = r"..\casewise.xlsx"
 df.to_excel(output)
