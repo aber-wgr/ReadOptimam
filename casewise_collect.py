@@ -17,40 +17,57 @@ data = pd.read_excel(input_file)
 new_data = data[['folder','studyID','seriesID','imageID','laterality','pixel_style','procedure','opinion_screen','opinion_mammog','opinion_ultra']]
 scale_factor = 8
 
+sizes = [256,512,2048]
+
 folder = []
 
 count_row = new_data.shape[0]  # gives number of row count
 count_col = new_data.shape[1]
 
-#count_row = 25
+start_point = 0
+end_point = count_row
 
-for row in range(0, count_row):
+for row in range(start_point, end_point):
     print("row:" + str(row) + " type:" + str(new_data['procedure'][row]) + " opinion:" + str(new_data['opinion_mammog'][row]))
-    if(str(new_data['procedure'][row]).find("Mammog") != -1 and str(new_data['opinion_mammog'][row]) != 'nan'):
-        print(row)
+    procedure = str(new_data['procedure'][row])
+    pf = procedure.find("/")
+    if(pf != -1):
+        procedure = procedure[0:pf-1]
+    #mammog = procedure.find("Mammog") != -1
+    mammog = (procedure != None) and (procedure != 'nan') 
+    if(mammog and str(new_data['opinion_mammog'][row]) != 'nan'):
         FOLDER_PATH = os.path.join(ROOTDIR, str(new_data['folder'].iloc[row]))
         LESION_FOLDER = os.path.join(FOLDER_PATH, str(new_data['studyID'].iloc[row]))
         IMAGE_PATH = os.path.join(LESION_FOLDER, str(new_data['imageID'].iloc[row]) + ".dcm")
-        try:
-            image = UTILS.diread(IMAGE_PATH)
-            x = int(4096 / scale_factor)
-            y = int(3328 / scale_factor)
-            scaled_image = resize(image, ( x, x), anti_aliasing=True) # comes out as 0-1 float64
-            scaled_image_z = (65535*((scaled_image - scaled_image.min())/scaled_image.ptp())).astype(np.uint16)
-            #scaled_image_z = scaled_image.astype(np.uint16) #convert back to 16-bit grayscale
-            #image_output, mask_output, seg_output, maskseg_output, array_output, bound_output = UTILS.output_location(SAVEPATH, "", "", "", 1)
-            image_output =  os.path.join(SAVEPATH, str(new_data['imageID'].iloc[row]) + ".png")
-            Path(image_output).parents[0].mkdir(parents=True, exist_ok=True)
-        
-            f = open(image_output, 'wb')
-            writer = png.Writer(width=x, height=x, bitdepth=16, greyscale=True)
-            writer.write(f, scaled_image_z)
-            f.close()
-            print("Image " + str(row) + ", original type:" + str(image.dtype) + " reprocessed")
-            #plt.imsave(image_output, scaled_image, cmap = 'gray')
-            #print("Image " + str(row) + ", original type:" + str(image.dtype))
-        except IOError:
-            print("Missing Image")
+
+        procedure_folder = os.path.join(SAVEPATH, procedure)
+
+        check_folder = os.path.join(procedure_folder, str(sizes[0]))
+        check_output =  os.path.join(check_folder, str(new_data['imageID'].iloc[row]) + ".png")
+        print("checking file:" + str(check_output))
+        found = os.path.isfile(check_output)
+        print("Found!" if found else "Not Found!")
+        if(not os.path.isfile(check_output)):        
+            try:
+                image = UTILS.diread(IMAGE_PATH)
+                                                
+                for size in sizes:                                
+                    size_folder = os.path.join(procedure_folder, str(size))
+                    image_output =  os.path.join(size_folder, str(new_data['imageID'].iloc[row]) + ".png")
+                    Path(image_output).parents[0].mkdir(parents=True, exist_ok=True)
+
+                    scaled_image = resize(image,(size,size),anti_aliasing=True) # comes out as 0-1 float64
+                    scaled_image_z = (65535*((scaled_image - scaled_image.min())/scaled_image.ptp())).astype(np.uint16)
+            
+                    f = open(image_output, 'wb')
+                    writer = png.Writer(width=size, height=size, bitdepth=16, greyscale=True)
+                    writer.write(f, scaled_image_z)
+                    f.close() 
+
+                print("Image " + str(row) + ", original type:" + str(image.dtype) + " reprocessed")            
+            except IOError as e:
+                print(str(e))
+                #print("Missing Image")
     else:
         print("rejected")
     
