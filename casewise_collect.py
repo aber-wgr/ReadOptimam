@@ -57,7 +57,7 @@ for row in range(start_point, end_point):
                     Path(image_output).parents[0].mkdir(parents=True, exist_ok=True)
 
                     scaled_image = resize(image,(size,size),anti_aliasing=True) # comes out as 0-1 float64
-                    scaled_image_z = (65535*((scaled_image - scaled_image.min())/scaled_image.ptp())).astype(np.uint16)
+                    scaled_image_z = (65535*((scaled_image - scaled_image.min())/scaled_image.ptp())).astype(np.uint16) # rescaled to 16-bit output
             
                     f = open(image_output, 'wb')
                     writer = png.Writer(width=size, height=size, bitdepth=16, greyscale=True)
