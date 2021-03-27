@@ -8,7 +8,7 @@ import cv2
 import utils as UTILS
 from pathlib import Path
 
-ROOTDIR = r"\\groupspaces.dcs.aber.ac.uk\groupspaces\mammography\OPTIMAM_ORIGINAL_new\OPTIMAM_DB\image_db\sharing\omi-db\images"
+ROOTDIR = r"\\path\to\optimam\install"
 SAVEPATH = r"..\png_images\lesions"
 input_file = r"..\dem1todem1200.xlsx"
 data = pd.read_excel(input_file)

@@ -7,7 +7,7 @@ import utils as UTILS
 import json 
 import pickle
 
-ROOTDIR = r"\\groupspaces.dcs.aber.ac.uk\groupspaces\mammography\OPTIMAM_ORIGINAL_new\OPTIMAM_DB\image_db\sharing\omi-db\data"
+ROOTDIR = r"\\path\to\optimam\install"
 
 listdir = os.listdir(ROOTDIR)
 

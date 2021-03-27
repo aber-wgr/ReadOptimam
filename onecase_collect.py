@@ -9,7 +9,7 @@ import utils as UTILS
 from pathlib import Path
 import png
 
-ROOTDIR = r"\\groupspaces.dcs.aber.ac.uk\groupspaces\mammography\OPTIMAM_ORIGINAL_new\OPTIMAM_DB\image_db\sharing\omi-db\images"
+ROOTDIR = r"\\path\to\optimam\install"
 SAVEPATH = r"..\png_images\onecase"
 input_file = r"..\onecase.xlsx"
 data = pd.read_excel(input_file)
