@@ -34,26 +34,31 @@ for row in range(start_point, end_point):
     if(pf != -1):
         procedure = procedure[0:pf-1]
     #mammog = procedure.find("Mammog") != -1
-    mammog = (procedure != None) and (procedure != 'nan') 
-    if(mammog and str(new_data['opinion_mammog'][row]) != 'nan'):
+    mammog = (procedure != None) and (procedure != 'nan')
+    opinion = str(new_data['opinion_mammog'][row])
+    if(mammog and opinion != 'nan'):
         FOLDER_PATH = os.path.join(ROOTDIR, str(new_data['folder'].iloc[row]))
         LESION_FOLDER = os.path.join(FOLDER_PATH, str(new_data['studyID'].iloc[row]))
         IMAGE_PATH = os.path.join(LESION_FOLDER, str(new_data['imageID'].iloc[row]) + ".dcm")
 
-        procedure_folder = os.path.join(SAVEPATH, procedure)
+        #procedure_folder = os.path.join(SAVEPATH, procedure)
 
-        check_folder = os.path.join(procedure_folder, str(sizes[0]))
-        check_output =  os.path.join(check_folder, str(new_data['imageID'].iloc[row]) + ".png")
-        print("checking file:" + str(check_output))
-        found = os.path.isfile(check_output)
+        check_folder = os.path.join(SAVEPATH, str(sizes[0]))
+        clabel_folder = os.path.join(check_folder, opinion)
+        
+        file_output =  os.path.join(clabel_folder, str(new_data['imageID'].iloc[row]) + ".png")
+        print("checking file:" + str(file_output))
+        found = os.path.isfile(file_output)
         print("Found!" if found else "Not Found!")
-        if(not os.path.isfile(check_output)):        
+        if(not os.path.isfile(file_output)):        
             try:
                 image = UTILS.diread(IMAGE_PATH)
                                                 
                 for size in sizes:                                
-                    size_folder = os.path.join(procedure_folder, str(size))
-                    image_output =  os.path.join(size_folder, str(new_data['imageID'].iloc[row]) + ".png")
+                    size_folder = os.path.join(SAVEPATH, str(size))
+                    label_folder = os.path.join(size_folder, opinion)
+                    image_output =  os.path.join(label_folder, str(new_data['imageID'].iloc[row]) + ".png")
+                    
                     Path(image_output).parents[0].mkdir(parents=True, exist_ok=True)
 
                     scaled_image = resize(image,(size,size),anti_aliasing=True) # comes out as 0-1 float64
