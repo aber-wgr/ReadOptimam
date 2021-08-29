@@ -146,7 +146,7 @@ count_row = new_data.shape[0]  # gives number of row count
 count_col = new_data.shape[1]
 
 start_point = 0
-end_point = count_row
+end_point = min(count_row,lesion_count)
 
 for row in range(start_point, end_point):
     print("row:" + str(row) + " type:" + str(new_data['procedure'][row]) + " opinion:" + str(new_data['opinion_mammog'][row]))
